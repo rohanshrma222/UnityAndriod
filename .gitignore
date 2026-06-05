@@ -1,0 +1,50 @@
+# Unity generated folders
+Library/
+Temp/
+Obj/
+Logs/
+UserSettings/
+
+# Unity / IDE generated files
+*.csproj
+*.sln
+*.unityproj
+*.user
+*.userprefs
+*.suo
+*.tmp
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+*.log
+*.mono_crash.*
+*.sysinfo.txt
+
+# OS and editor clutter
+.DS_Store
+.idea/
+.vs/
+*.DotSettings.user
+.env
+
+# Build outputs
+Build/
+Builds/
+bin/
+obj/
+*.apk
+*.aab
+*.app
+*.unitypackage
+
+# Addressables / generated content
+Assets/AddressableAssetsData/*/*.bin*
+Assets/Addressables_Temp/
+Assets/StreamingAssets/aa*
+
+# Test runner generated scenes
+Assets/InitTestScene*.unity*
