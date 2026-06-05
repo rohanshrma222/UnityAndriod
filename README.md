@@ -1,78 +1,78 @@
-# Sherpa-ONNX Unity Android Demo
+# Marine Biology Android Voice Assistant
 
-This is a Unity 2022.3+ Android demo scaffold for offline streaming speech-to-text and text-to-speech with the Ponyu-dev `Unity-Sherpa-ONNX` package.
+A Unity 2022.3+ Android voice assistant ("Marina") specializing in marine biology. This project utilizes native Android speech services and the Google Gemini API to create an interactive conversational voice experience.
 
-The current Ponyu-dev package declares Unity 2022.3 as its minimum version. Use 2022.3 LTS or newer unless you deliberately pin an older plugin revision.
+Unlike systems that package bulky offline model binaries, this project is designed to be **lightweight** and **responsive** by leveraging Android's built-in platform speech services.
 
-## Setup
+---
 
-1. Open this folder as a Unity project.
-2. Let Package Manager resolve:
-   - `com.ponyudev.sherpa-onnx` from GitHub
-   - `com.cysharp.unitask`
+## Key Features
+
+- **Native Android Speech-to-Text (`SpeechRecognizer`)**: Uses Android's speech service for low-latency recognition. Features customizable phrase biasing to improve accuracy for complex marine terms (e.g., *cephalopods*, *bioluminescence*, *cnidarians*).
+- **Native Android Text-to-Speech (`TextToSpeech`)**: Leverages the system voice synthesis engine to read assistant answers aloud.
+- **Smart Gemini Integration**: Connects to the Google Gemini API to generate conversational responses guided by a specialized marine biology expert system prompt.
+- **Multi-language Support**: Fully supports voice interaction, response generation, and speech synthesis in both **English** and **German**.
+- **Lightweight Footprint**: Excludes heavy neural network model binaries, keeping the build size minimal and installation fast.
+
+---
+
+## System Architecture
+
+```
+[User Speech] 
+      │
+      ▼ (Microphone Input)
+[Native Android SpeechRecognizer Bridge]
+      │
+      ▼ (Transcribed Text)
+[Gemini Chat Client] (Requires internet, System Prompt: Marina Marine Expert)
+      │
+      ▼ (Generated Answer Text)
+[Native Android TextToSpeech Bridge]
+      │
+      ▼ (Synthesized Audio Output)
+[Device Speakers]
+```
+
+---
+
+## Setup & Configuration
+
+### 1. Unity Project Setup
+1. Open this repository root folder as a Unity project in **Unity 2022.3 LTS** or newer.
+2. Ensure the following package dependencies are resolved in the Package Manager:
+   - `UniTask` (`com.cysharp.unitask`)
    - TextMeshPro
-3. Open `Tools > Sherpa-ONNX > Configure Android Build`.
-4. Open `Edit > Project Settings > Sherpa ONNX` and install Android `arm64-v8a` native libraries.
-5. Import or copy models into `Assets/StreamingAssets/SherpaOnnx/`:
-   - ASR streaming default: `asr-models/zipformer-en/` and `asr-models/zipformer-de/`
-   - TTS: `tts-models/tts-en/` and `tts-models/tts-de/`
-6. Open `Tools > Sherpa-ONNX > Create Demo Scene`.
-7. Open `Assets/Scenes/SherpaDemo.unity`, then build and run on Android.
 
-## Gemini Voice Assistant Mode
+### 2. Configure Gemini API Key
+You can configure the Gemini API key in one of two ways:
+- **Environment File (Recommended)**: Create a `.env` file in your project root directory and add:
+  ```env
+  GEMINI_API_KEY=your_gemini_api_key_here
+  ```
+- **Inspector Override**: Select the `MarineManager` object in the demo scene, locate the `MarineDemoManager` component in the Inspector, and input your API key under `Gemini > Api Key`.
 
-The demo can run as:
+> [!WARNING]
+> Do not ship a production app with a hardcoded or raw API key in the client. For production releases, proxy your requests through a secure backend proxy.
 
-`speech -> offline Sherpa STT -> Gemini text answer -> offline Sherpa TTS`
+### 3. Build & Run
+1. Open the main scene: `Assets/Scenes/MarineDemo.unity`.
+2. In **Build Settings**, switch the platform to **Android**.
+3. Connect your Android device, then click **Build and Run**.
 
-To enable it:
+---
 
-1. Select the `SherpaManager` object in `SherpaDemo.unity`.
-2. In `SherpaDemoManager`, keep `Use Gemini` enabled.
-3. Paste a Google AI Studio Gemini API key into `Gemini > Api Key`.
-4. Build and run.
+## Project Structure
 
-When Gemini is enabled and the key is set, the app sends the recognized transcript to Gemini and speaks the generated answer. If no key is set, it falls back to local echo/default response behavior.
+- **[MarineDemoManager.cs](file:///d:/opensource/demo_MarineV4/Assets/Scripts/MarineDemoManager.cs)**: Coordinates the application lifecycle, UI interaction, permission handling, and bridges.
+- **[AndroidSpeechRecognizerBridge.cs](file:///d:/opensource/demo_MarineV4/Assets/Scripts/AndroidSpeechRecognizerBridge.cs)**: C# side wrapper that calls into Java classes for Android's SpeechRecognizer API.
+- **[AndroidTextToSpeechBridge.cs](file:///d:/opensource/demo_MarineV4/Assets/Scripts/AndroidTextToSpeechBridge.cs)**: C# wrapper for Android's TextToSpeech API.
+- **[GeminiChatClient.cs](file:///d:/opensource/demo_MarineV4/Assets/Scripts/GeminiChatClient.cs)**: Manages communication and payloads with the Google Gemini API.
+- **Plugins/MarineSpeech**: Contains the underlying Java implementation (`.java` files) that handles the actual Android OS API bindings.
 
-This mode requires internet access on the device. The Android manifest includes both `RECORD_AUDIO` and `INTERNET`.
+---
 
-Do not ship a production app with a raw API key embedded in the client. For production, proxy Gemini through your own backend or use a short-lived token flow.
+## Native APIs Referenced
 
-The demo manager uses the plugin's runtime services:
-
-- `OnlineAsrService`
-- `TtsService`
-- `MicrophoneSource`
-
-Android StreamingAssets extraction and native microphone fallback are handled by the plugin.
-
-## Android SpeechRecognizer Test Mode
-
-If you want to test Android's built-in speech recognizer on a phone, enable `Use Android Speech Recognizer` on the `SherpaManager` object before building the APK.
-
-This path:
-
-- Uses Android's `SpeechRecognizer` instead of streaming the raw mic audio to Groq
-- Keeps the APK lightweight because it does not add new speech model files
-- Requires the device to have a speech recognition service available, and offline behavior depends on the phone's installed on-device speech support
-
-The manifest includes the `android.speech.RecognitionService` query so Android 11+ devices can see the service.
-
-## Profiles
-
-Runtime profile JSON lives in:
-
-- `Assets/StreamingAssets/SherpaOnnx/online-asr-settings.json`
-- `Assets/StreamingAssets/SherpaOnnx/tts-settings.json`
-- `Assets/StreamingAssets/SherpaOnnx/microphone-settings.json`
-
-Profile names must match folder names because the plugin resolves model paths as:
-
-- `SherpaOnnx/asr-models/{profileName}`
-- `SherpaOnnx/tts-models/{profileName}`
-
-If your imported model filenames differ, update the JSON fields before building.
-
-## Model Note
-
-The requested NeMo Canary multilingual model is a non-streaming encoder/decoder model. It is suitable for final recognition after recording, but not for the live partial-result flow in this demo. The scaffold therefore defaults to two online Zipformer profiles for English and German. To use Canary, add an offline ASR flow with the plugin's `AsrService`, or replace the ASR profile with a streaming multilingual model supported by `OnlineAsrService`.
+- [Android SpeechRecognizer API](https://developer.android.com/reference/android/speech/SpeechRecognizer)
+- [Android TextToSpeech API](https://developer.android.com/reference/android/speech/tts/TextToSpeech)
